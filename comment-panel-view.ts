@@ -388,8 +388,12 @@ export class CommentPanelView extends ItemView {
 
 		// Check again after a short delay to see if something wipes it
 		setTimeout(() => {
-			console.log('CHECK AFTER 50ms: children count:', this.newCommentContainer?.children.length);
-			console.log('CHECK AFTER 50ms: display:', this.newCommentContainer?.style.display);
+			const domContainer = this.containerEl.querySelector('.daily-log-comments-new-comment-container') as HTMLElement;
+			console.log('CHECK AFTER 50ms: DOM container found:', !!domContainer);
+			console.log('CHECK AFTER 50ms: DOM children count:', domContainer?.children.length);
+			console.log('CHECK AFTER 50ms: DOM display:', domContainer?.style.display);
+			console.log('CHECK AFTER 50ms: DOM innerHTML length:', domContainer?.innerHTML.length);
+			console.log('CHECK AFTER 50ms: Stored ref === DOM element:', this.newCommentContainer === domContainer);
 			console.log('CHECK AFTER 50ms: activeInputForm exists:', !!this.activeInputForm);
 		}, 50);
 
