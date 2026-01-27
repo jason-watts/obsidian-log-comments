@@ -11,6 +11,40 @@
   font-weight: 600;
 }
 
+.daily-log-comments-instructions {
+  padding: var(--size-4-3);
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.daily-log-comments-instructions-header {
+  font-weight: 500;
+  margin-bottom: var(--size-4-1);
+  color: var(--text-normal);
+}
+
+.daily-log-comments-instructions ol {
+  margin: 0;
+  padding-left: var(--size-4-5);
+}
+
+.daily-log-comments-instructions li {
+  margin-bottom: var(--size-2-1);
+}
+
+.daily-log-comments-instructions li:last-child {
+  margin-bottom: 0;
+}
+
+.daily-log-comments-empty-state {
+  padding: var(--size-4-8);
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .daily-log-comments-section {
   border-bottom: 1px solid var(--background-modifier-border);
 }

@@ -115,14 +115,33 @@ export class CommentPanelView extends ItemView {
 
 		container.createDiv({ text: 'Daily Log Comments', cls: 'daily-log-comments-header' });
 
+		// Add instructions
+		const instructions = container.createDiv({ cls: 'daily-log-comments-instructions' });
+		instructions.createEl('p', { text: 'How to use:', cls: 'daily-log-comments-instructions-header' });
+		const list = instructions.createEl('ol');
+		list.createEl('li', { text: 'Place cursor in a person\'s section' });
+		list.createEl('li', { text: 'Use "Add comment" command to create a comment' });
+		list.createEl('li', { text: 'Use "Toggle comments panel" command to show/hide this panel' });
+
 		// Create container for new comment input (initially hidden)
 		this.newCommentContainer = container.createDiv({ cls: 'daily-log-comments-new-comment-container' });
 		this.newCommentContainer.style.display = 'none';
 
-		// Render all persons found in the file
+		// Render only persons with comments
 		for (const person of this.persons) {
 			const personComments = this.comments[person] || [];
-			this.renderPersonSection(container, person, personComments);
+			if (personComments.length > 0) {
+				this.renderPersonSection(container, person, personComments);
+			}
+		}
+
+		// Show message if no comments exist
+		const hasAnyComments = Object.values(this.comments).some(comments => comments.length > 0);
+		if (!hasAnyComments) {
+			container.createDiv({
+				text: 'No comments yet. Add a comment using the command!',
+				cls: 'daily-log-comments-empty-state'
+			});
 		}
 	}
 
@@ -269,6 +288,8 @@ export class CommentPanelView extends ItemView {
 					isReply,
 					replyIndex
 				);
+				// Reload the panel to show updated comments
+				await this.loadCurrentFile();
 			} catch (error) {
 				console.error('Failed to update comment:', error);
 			}
@@ -289,6 +310,8 @@ export class CommentPanelView extends ItemView {
 				isReply,
 				replyIndex
 			);
+			// Reload the panel to show updated comments
+			await this.loadCurrentFile();
 		} catch (error) {
 			console.error('Failed to delete comment:', error);
 		}

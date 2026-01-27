@@ -1,15 +1,15 @@
 # Daily Log Comments Plugin
 
-An Obsidian plugin for adding collaborative threaded comments to daily and weekly team logs.
+An Obsidian plugin for adding collaborative comments to daily and weekly team logs.
 
 ## Features
 
-- Select text and add comments with a hotkey
-- Threaded discussions organized by person
-- Visual gutter indicators for commented text
-- All comments stored directly in markdown files
-- Clean reading mode - comments invisible until needed
-- Side panel for viewing and managing comment threads
+- Add comments with a hotkey (text selection optional)
+- Comments organized by person section
+- Side panel for viewing and managing comments
+- Comments stored in separate JSON files (keeps markdown clean)
+- Hover-only edit/delete actions
+- Auto-refresh after add, edit, or delete
 
 ## Installation
 
@@ -30,21 +30,42 @@ An Obsidian plugin for adding collaborative threaded comments to daily and weekl
 ## Usage
 
 1. Configure your author name in Settings → Daily Log Comments
-2. Select text in a daily or weekly log
-3. Press `Ctrl/Cmd + Shift + C` to add a comment
-4. View comments in the side panel (click gutter icons or use `Ctrl/Cmd + Shift + P`)
-5. Reply, edit, or delete comments from the panel
+2. Open a daily or weekly log file
+3. Place cursor in a person's section (e.g., under `## [[Person Name]]`)
+4. Press `Ctrl/Cmd + Shift + C` to add a comment
+5. View all comments in the side panel
+6. Hover over comments to see Edit/Delete actions
 
 ## Settings
 
-- **Author Name**: Your name for comments (as wikilink)
-- **People Folder**: Path to folder containing person notes
-- **File Patterns**: Glob patterns for daily/weekly logs
-- **Panel Behavior**: Auto-open, auto-scroll preferences
+- **Author Name**: Your name for comments (as wikilink, e.g., `[[Jason Watts]]`)
+- **People Folder**: Path to folder containing person notes (default: `Reference/People`)
+- **Daily Log Pattern**: Glob pattern for daily logs (default: `Logs/Daily/**/*.md`)
+- **Weekly Log Pattern**: Glob pattern for weekly logs (default: `Logs/Weekly/**/*.md`)
+- **Auto Open Panel**: Automatically open panel when adding a comment
+- **Auto Scroll to Comment**: Scroll to comment after adding
+- **Keep Panel Open**: Keep panel open on workspace load
 
-## Design
+## File Structure
 
-See [design document](docs/design.md) for full architecture and implementation details.
+Comments are stored in separate JSON files:
+- Daily log comments: `Logs/Daily/Comments/YYYY/MM/YYYY-MM-DD.comments.json`
+- Weekly log comments: `Logs/Weekly/Comments/YYYY/MM/YYYY-MM-DD.comments.json`
+
+Each comment file contains JSON structured by person:
+```json
+{
+  "[[Person Name]]": [
+    {
+      "id": "comment-abc123",
+      "author": "[[Your Name]]",
+      "text": "Comment text here",
+      "timestamp": "2026-01-27T08:36:24.363Z",
+      "replies": []
+    }
+  ]
+}
+```
 
 ## License
 

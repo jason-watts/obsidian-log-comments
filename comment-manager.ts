@@ -1,5 +1,4 @@
 import { Editor, TFile } from 'obsidian';
-import * as yaml from 'js-yaml';
 import { nanoid } from 'nanoid';
 import { CommentData, Comment, Reply } from './types';
 import DailyLogCommentsPlugin from './main';
@@ -12,18 +11,68 @@ export class CommentManager {
 	}
 
 	/**
-	 * Parse comments section from file content
+	 * Get the path for the comments file associated with a markdown file
 	 */
-	parseComments(content: string): CommentData {
-		const commentMatch = content.match(/<!-- COMMENTS\n---comments\n([\s\S]*?)\n---\n-->/);
+	getCommentsFilePath(mdFile: TFile): string {
+		// Extract filename without extension
+		const filename = mdFile.basename;
 
-		if (!commentMatch) {
-			return {};
+		// Determine if this is a daily or weekly log based on path
+		const isDaily = mdFile.path.includes('Logs/Daily/');
+		const isWeekly = mdFile.path.includes('Logs/Weekly/');
+
+		if (!isDaily && !isWeekly) {
+			// Fallback to sidecar file if not in expected location
+			return mdFile.path.replace(/\.md$/, '.comments.json');
 		}
 
+		// Extract YYYY/MM from the file path or filename
+		// Files are typically at Logs/Daily/YYYY/MM/YYYY-MM-DD.md
+		const pathMatch = mdFile.path.match(/(\d{4})\/(\d{2})\//);
+
+		if (pathMatch) {
+			const [, year, month] = pathMatch;
+			// Check if file path includes tps-markdown subdirectory
+			const pathPrefix = mdFile.path.includes('tps-markdown/') ? 'tps-markdown/' : '';
+			if (isDaily) {
+				return `${pathPrefix}Logs/Daily/Comments/${year}/${month}/${filename}.comments.json`;
+			} else {
+				return `${pathPrefix}Logs/Weekly/Comments/${year}/${month}/${filename}.comments.json`;
+			}
+		}
+
+		// Fallback: try to extract from filename (YYYY-MM-DD format)
+		const filenameMatch = filename.match(/^(\d{4})-(\d{2})-\d{2}$/);
+		if (filenameMatch) {
+			const [, year, month] = filenameMatch;
+			// Check if file path includes tps-markdown subdirectory
+			const pathPrefix = mdFile.path.includes('tps-markdown/') ? 'tps-markdown/' : '';
+			if (isDaily) {
+				return `${pathPrefix}Logs/Daily/Comments/${year}/${month}/${filename}.comments.json`;
+			} else {
+				return `${pathPrefix}Logs/Weekly/Comments/${year}/${month}/${filename}.comments.json`;
+			}
+		}
+
+		// Final fallback
+		return mdFile.path.replace(/\.md$/, '.comments.json');
+	}
+
+	/**
+	 * Load comments from the sidecar JSON file
+	 */
+	async loadComments(mdFile: TFile): Promise<CommentData> {
+		const commentsPath = this.getCommentsFilePath(mdFile);
+
 		try {
-			const yamlContent = commentMatch[1];
-			const parsed = yaml.load(yamlContent) as CommentData;
+			const exists = await this.plugin.app.vault.adapter.exists(commentsPath);
+			if (!exists) {
+				return {};
+			}
+
+			const content = await this.plugin.app.vault.adapter.read(commentsPath);
+			const parsed = JSON.parse(content) as CommentData;
+
 			// Ensure each person has an array
 			if (parsed) {
 				for (const person in parsed) {
@@ -34,26 +83,48 @@ export class CommentManager {
 			}
 			return parsed || {};
 		} catch (error) {
-			console.error('Failed to parse comments:', error);
+			console.error('Failed to load comments:', error);
 			return {};
 		}
 	}
 
 	/**
-	 * Serialize comments to YAML wrapped in HTML comment
+	 * Save comments to the sidecar JSON file
 	 */
-	serializeComments(comments: CommentData): string {
-		if (Object.keys(comments).length === 0) {
-			return '';
+	async saveComments(mdFile: TFile, comments: CommentData): Promise<void> {
+		const commentsPath = this.getCommentsFilePath(mdFile);
+
+		try {
+			// Ensure directory exists - create recursively
+			const dirPath = commentsPath.substring(0, commentsPath.lastIndexOf('/'));
+			await this.ensureDirectoryExists(dirPath);
+
+			const content = JSON.stringify(comments, null, 2);
+			await this.plugin.app.vault.adapter.write(commentsPath, content);
+			console.log('Comments saved to:', commentsPath);
+		} catch (error) {
+			console.error('Failed to save comments:', error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Recursively ensure a directory path exists
+	 */
+	async ensureDirectoryExists(dirPath: string): Promise<void> {
+		const exists = await this.plugin.app.vault.adapter.exists(dirPath);
+		if (exists) {
+			return;
 		}
 
-		const yamlContent = yaml.dump(comments, {
-			indent: 2,
-			lineWidth: -1,
-			noRefs: true
-		});
+		// Create parent directory first
+		const parentPath = dirPath.substring(0, dirPath.lastIndexOf('/'));
+		if (parentPath && parentPath !== dirPath) {
+			await this.ensureDirectoryExists(parentPath);
+		}
 
-		return `\n\n<!-- COMMENTS\n---comments\n${yamlContent}---\n-->`;
+		// Now create this directory
+		await this.plugin.app.vault.adapter.mkdir(dirPath);
 	}
 
 	/**
