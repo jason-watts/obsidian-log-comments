@@ -386,6 +386,13 @@ export class CommentPanelView extends ItemView {
 		console.log('Container is in DOM:', this.containerEl.contains(this.newCommentContainer));
 		console.log('Container display style:', this.newCommentContainer.style.display);
 
+		// Check again after a short delay to see if something wipes it
+		setTimeout(() => {
+			console.log('CHECK AFTER 50ms: children count:', this.newCommentContainer?.children.length);
+			console.log('CHECK AFTER 50ms: display:', this.newCommentContainer?.style.display);
+			console.log('CHECK AFTER 50ms: activeInputForm exists:', !!this.activeInputForm);
+		}, 50);
+
 		const actionsDiv = form.createDiv({ cls: 'daily-log-comments-input-form-actions' });
 
 		const cancelBtn = actionsDiv.createEl('button', { text: 'Cancel' });
