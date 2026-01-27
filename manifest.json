@@ -1,7 +1,7 @@
 {
   "id": "daily-log-comments",
   "name": "Daily Log Comments",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "minAppVersion": "1.4.0",
   "description": "Add collaborative threaded comments to daily and weekly logs",
   "author": "Jason Watts",

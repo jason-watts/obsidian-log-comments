@@ -111,6 +111,12 @@ export class CommentPanelView extends ItemView {
 	}
 
 	render(): void {
+		// Don't render if there's an active input form (would wipe it out)
+		if (this.activeInputForm) {
+			console.log('Render: Skipping render because activeInputForm exists');
+			return;
+		}
+
 		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
 
