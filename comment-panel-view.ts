@@ -341,7 +341,10 @@ export class CommentPanelView extends ItemView {
 
 		console.log('Creating form elements');
 		this.newCommentContainer.empty();
+		console.log('Setting display to block');
 		this.newCommentContainer.style.display = 'block';
+		console.log('Display is now:', this.newCommentContainer.style.display);
+		console.log('Container element:', this.newCommentContainer);
 
 		const label = this.newCommentContainer.createDiv({
 			text: `New comment on ${person.replace(/\[\[|\]\]/g, '')}'s section`,
