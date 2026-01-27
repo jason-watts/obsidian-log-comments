@@ -20,10 +20,14 @@ export default class DailyLogCommentsPlugin extends Plugin {
 		);
 
 		// Register commands
+		console.log('Registering add-comment command');
 		this.addCommand({
 			id: 'add-comment',
 			name: 'Add comment',
-			editorCallback: (editor, view) => this.handleAddComment(editor, view)
+			editorCallback: (editor, ctx) => {
+				console.log('Add comment command triggered');
+				this.handleAddComment(editor, ctx);
+			}
 		});
 
 		this.addCommand({
@@ -49,6 +53,7 @@ export default class DailyLogCommentsPlugin extends Plugin {
 	}
 
 	async handleAddComment(editor: any, ctx: any) {
+		console.log('handleAddComment called');
 		// Check if author is configured
 		if (!this.settings.authorName) {
 			new Notice('Please configure your author name in plugin settings');
