@@ -352,8 +352,15 @@ export class CommentPanelView extends ItemView {
 		console.log('Creating form elements');
 		this.newCommentContainer.empty();
 		console.log('Setting display to block');
+
+		// Try multiple approaches to ensure it's visible
 		this.newCommentContainer.style.display = 'block';
-		console.log('Display is now:', this.newCommentContainer.style.display);
+		this.newCommentContainer.style.visibility = 'visible';
+		this.newCommentContainer.removeAttribute('hidden');
+		this.newCommentContainer.setAttribute('style', 'display: block !important;');
+
+		console.log('Style attribute:', this.newCommentContainer.getAttribute('style'));
+		console.log('Computed style:', window.getComputedStyle(this.newCommentContainer).display);
 		console.log('Container element:', this.newCommentContainer);
 
 		const label = this.newCommentContainer.createDiv({
