@@ -412,12 +412,16 @@ export class CommentPanelView extends ItemView {
 			if (!text) return;
 
 			try {
+				// Clear form flag before submit so render can work
+				this.activeInputForm = null;
+
 				await onSubmit(text);
+
 				this.newCommentContainer!.style.display = 'none';
 				this.newCommentContainer!.empty();
-				this.activeInputForm = null;
 			} catch (error) {
 				console.error('Failed to add comment:', error);
+				this.activeInputForm = null; // Clear on error too
 			}
 		});
 

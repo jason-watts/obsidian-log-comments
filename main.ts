@@ -121,6 +121,9 @@ export default class DailyLogCommentsPlugin extends Plugin {
 						person
 					);
 
+					// Reload the panel to show the new comment
+					await panel.loadCurrentFile();
+
 					if (this.settings.autoScrollToComment) {
 						setTimeout(() => panel.scrollToComment(commentId), 100);
 					}
