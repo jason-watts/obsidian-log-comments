@@ -100,6 +100,8 @@
   gap: var(--size-4-2);
   opacity: 0;
   transition: opacity 0.2s;
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 
 .daily-log-comments-comment:hover .daily-log-comments-comment-actions,
@@ -109,14 +111,14 @@
 
 .daily-log-comments-comment-actions a {
   font-size: 0.85em;
-  color: var(--text-muted);
+  color: var(--link-color);
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: underline;
+  flex-shrink: 0;
 }
 
 .daily-log-comments-comment-actions a:hover {
-  color: var(--text-normal);
-  text-decoration: underline;
+  color: var(--link-color-hover);
 }
 
 .daily-log-comments-reply {
