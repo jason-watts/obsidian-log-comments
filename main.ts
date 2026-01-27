@@ -48,7 +48,7 @@ export default class DailyLogCommentsPlugin extends Plugin {
 		}
 	}
 
-	async handleAddComment(editor: any, view: MarkdownView) {
+	async handleAddComment(editor: any, ctx: any) {
 		// Check if author is configured
 		if (!this.settings.authorName) {
 			new Notice('Please configure your author name in plugin settings');
@@ -56,8 +56,10 @@ export default class DailyLogCommentsPlugin extends Plugin {
 		}
 
 		// Check if file matches pattern
+		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (!view || !view.file) return;
+
 		const file = view.file;
-		if (!file) return;
 
 		const filePath = file.path;
 		const dailyPattern = new RegExp(this.settings.dailyLogPattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*'));
