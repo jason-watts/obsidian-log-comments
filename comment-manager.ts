@@ -123,8 +123,7 @@ export class CommentManager {
 		text: string,
 		person: string
 	): Promise<void> {
-		const content = await this.plugin.app.vault.read(file);
-		const comments = this.parseComments(content);
+		const comments = await this.loadComments(file);
 
 		// Initialize person array if it doesn't exist
 		if (!comments[person]) {
@@ -140,13 +139,7 @@ export class CommentManager {
 			replies: []
 		});
 
-		// Remove old comments section if exists
-		const contentWithoutComments = content.replace(/\n*<!-- COMMENTS\n---comments\n[\s\S]*?\n---\n-->/g, '');
-
-		// Append new comments section
-		const newContent = contentWithoutComments + this.serializeComments(comments);
-
-		await this.plugin.app.vault.modify(file, newContent);
+		await this.saveComments(file, comments);
 	}
 
 	/**
@@ -159,8 +152,7 @@ export class CommentManager {
 		author: string,
 		text: string
 	): Promise<void> {
-		const content = await this.plugin.app.vault.read(file);
-		const comments = this.parseComments(content);
+		const comments = await this.loadComments(file);
 
 		if (!comments[person]) {
 			throw new Error('Person not found');
@@ -177,10 +169,7 @@ export class CommentManager {
 			timestamp: new Date().toISOString()
 		});
 
-		const contentWithoutComments = content.replace(/\n*<!-- COMMENTS\n---comments\n[\s\S]*?\n---\n-->/g, '');
-		const newContent = contentWithoutComments + this.serializeComments(comments);
-
-		await this.plugin.app.vault.modify(file, newContent);
+		await this.saveComments(file, comments);
 	}
 
 	/**
@@ -194,8 +183,7 @@ export class CommentManager {
 		isReply: boolean = false,
 		replyIndex?: number
 	): Promise<void> {
-		const content = await this.plugin.app.vault.read(file);
-		const comments = this.parseComments(content);
+		const comments = await this.loadComments(file);
 
 		if (!comments[person]) {
 			throw new Error('Person not found');
@@ -215,10 +203,7 @@ export class CommentManager {
 			comment.text = newText;
 		}
 
-		const contentWithoutComments = content.replace(/\n*<!-- COMMENTS\n---comments\n[\s\S]*?\n---\n-->/g, '');
-		const newContent = contentWithoutComments + this.serializeComments(comments);
-
-		await this.plugin.app.vault.modify(file, newContent);
+		await this.saveComments(file, comments);
 	}
 
 	/**
@@ -231,8 +216,7 @@ export class CommentManager {
 		isReply: boolean = false,
 		replyIndex?: number
 	): Promise<void> {
-		const content = await this.plugin.app.vault.read(file);
-		const comments = this.parseComments(content);
+		const comments = await this.loadComments(file);
 
 		if (!comments[person]) {
 			throw new Error('Person not found');
@@ -252,9 +236,6 @@ export class CommentManager {
 			comments[person].splice(commentIndex, 1);
 		}
 
-		const contentWithoutComments = content.replace(/\n*<!-- COMMENTS\n---comments\n[\s\S]*?\n---\n-->/g, '');
-		const newContent = contentWithoutComments + this.serializeComments(comments);
-
-		await this.plugin.app.vault.modify(file, newContent);
+		await this.saveComments(file, comments);
 	}
 }

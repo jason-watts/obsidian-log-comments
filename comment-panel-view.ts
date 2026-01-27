@@ -94,7 +94,7 @@ export class CommentPanelView extends ItemView {
 
 		this.currentFile = activeView.file;
 		const content = await this.app.vault.read(this.currentFile);
-		this.comments = this.plugin.commentManager.parseComments(content);
+		this.comments = await this.plugin.commentManager.loadComments(this.currentFile);
 		this.persons = this.plugin.commentManager.parsePersonHeaders(content);
 		this.render();
 	}
