@@ -71,13 +71,7 @@ export default class DailyLogCommentsPlugin extends Plugin {
 			return;
 		}
 
-		// Get selection
-		const selection = editor.getSelection();
-		if (!selection) {
-			new Notice('Please select text to comment on');
-			return;
-		}
-
+		// Get cursor position (use end of selection if text is selected, otherwise current position)
 		const cursor = editor.getCursor('to');
 		const lineNumber = cursor.line;
 
