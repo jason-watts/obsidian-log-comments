@@ -1,0 +1,149 @@
+/* Comment Panel Styles */
+.daily-log-comments-panel {
+  padding: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.daily-log-comments-header {
+  padding: var(--size-4-4);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-weight: 600;
+}
+
+.daily-log-comments-section {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.daily-log-comments-section-header {
+  padding: var(--size-4-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+  background: var(--background-secondary);
+}
+
+.daily-log-comments-section-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.daily-log-comments-section-toggle {
+  font-size: 0.8em;
+  user-select: none;
+}
+
+.daily-log-comments-section-name {
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+.daily-log-comments-section-count {
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.daily-log-comments-section-content {
+  padding: var(--size-4-2);
+}
+
+.daily-log-comments-thread {
+  margin-bottom: var(--size-4-4);
+  padding: var(--size-4-2);
+  border-left: 2px solid var(--background-modifier-border);
+}
+
+.daily-log-comments-thread.highlighted {
+  background: var(--background-modifier-hover);
+  animation: highlight-fade 2s ease-out;
+}
+
+@keyframes highlight-fade {
+  from { background: var(--interactive-accent); }
+  to { background: transparent; }
+}
+
+.daily-log-comments-comment {
+  margin-bottom: var(--size-4-2);
+}
+
+.daily-log-comments-comment-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--size-4-1);
+  margin-bottom: var(--size-4-1);
+  font-size: 0.9em;
+}
+
+.daily-log-comments-comment-author {
+  font-weight: 500;
+  color: var(--text-accent);
+}
+
+.daily-log-comments-comment-timestamp {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.daily-log-comments-comment-warning {
+  color: var(--text-error);
+  font-size: 0.9em;
+}
+
+.daily-log-comments-comment-text {
+  margin-bottom: var(--size-4-2);
+  white-space: pre-wrap;
+}
+
+.daily-log-comments-comment-actions {
+  display: flex;
+  gap: var(--size-4-1);
+}
+
+.daily-log-comments-comment-actions button {
+  font-size: 0.85em;
+  padding: var(--size-2-1) var(--size-4-1);
+}
+
+.daily-log-comments-reply {
+  margin-left: var(--size-4-4);
+  padding-left: var(--size-4-2);
+  border-left: 1px solid var(--background-modifier-border);
+}
+
+.daily-log-comments-input-form {
+  margin: var(--size-4-2) 0;
+  padding: var(--size-4-2);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+}
+
+.daily-log-comments-input-form textarea {
+  width: 100%;
+  min-height: 60px;
+  margin-bottom: var(--size-4-2);
+  padding: var(--size-4-2);
+  font-family: var(--font-text);
+  font-size: var(--font-ui-small);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  resize: vertical;
+}
+
+.daily-log-comments-input-form-actions {
+  display: flex;
+  gap: var(--size-4-1);
+  justify-content: flex-end;
+}
+
+/* Gutter icon styles */
+.cm-gutterElement .daily-log-comment-marker {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.cm-gutterElement .daily-log-comment-marker:hover {
+  opacity: 1;
+}
