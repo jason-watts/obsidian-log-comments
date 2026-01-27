@@ -51,8 +51,10 @@ export class CommentPanelView extends ItemView {
 	}
 
 	async loadCurrentFile(): Promise<void> {
+		console.log('Panel: loadCurrentFile called');
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!activeView || !activeView.file) {
+			console.log('Panel: No active view or file');
 			this.currentFile = null;
 			this.comments = {};
 			this.render();
@@ -61,15 +63,21 @@ export class CommentPanelView extends ItemView {
 
 		// Check if file matches pattern
 		const filePath = activeView.file.path;
+		console.log('Panel: File path:', filePath);
 		const dailyPattern = new RegExp(this.plugin.settings.dailyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
 		const weeklyPattern = new RegExp(this.plugin.settings.weeklyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
+		console.log('Panel: Patterns:', { daily: dailyPattern.source, weekly: weeklyPattern.source });
+		console.log('Panel: Daily test:', dailyPattern.test(filePath));
+		console.log('Panel: Weekly test:', weeklyPattern.test(filePath));
 
 		if (!dailyPattern.test(filePath) && !weeklyPattern.test(filePath)) {
+			console.log('Panel: File does not match patterns');
 			this.currentFile = null;
 			this.comments = {};
 			this.render();
 			return;
 		}
+		console.log('Panel: File matches pattern');
 
 		this.currentFile = activeView.file;
 		const content = await this.app.vault.read(this.currentFile);
