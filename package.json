@@ -1,6 +1,6 @@
 {
   "name": "obsidian-log-comments",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Collaborative commenting plugin for Obsidian daily and weekly logs",
   "main": "main.js",
   "scripts": {

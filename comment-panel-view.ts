@@ -156,21 +156,13 @@ export class CommentPanelView extends ItemView {
 		// Render main comment
 		this.renderComment(thread, person, comment, false);
 
-		// Render replies
+		// Render replies (for backwards compatibility with existing data)
 		if (comment.replies && comment.replies.length > 0) {
 			for (let i = 0; i < comment.replies.length; i++) {
 				const replyDiv = thread.createDiv({ cls: 'daily-log-comments-reply' });
 				this.renderComment(replyDiv, person, comment.replies[i], true, i, comment.id);
 			}
 		}
-
-		// Add reply link at the end
-		const actions = thread.createDiv({ cls: 'daily-log-comments-comment-actions' });
-		const replyLink = actions.createEl('a', { text: 'Reply' });
-		replyLink.addEventListener('click', (e) => {
-			e.preventDefault();
-			this.showReplyForm(thread, person, comment.id);
-		});
 	}
 
 	renderComment(
