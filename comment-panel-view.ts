@@ -31,10 +31,12 @@ export class CommentPanelView extends ItemView {
 		container.empty();
 		container.addClass('daily-log-comments-panel');
 
-		// Listen for active file changes
+		// Listen for file open events instead of active leaf changes
 		this.registerEvent(
-			this.app.workspace.on('active-leaf-change', () => {
-				this.loadCurrentFile();
+			this.app.workspace.on('file-open', (file) => {
+				if (file) {
+					this.loadCurrentFile();
+				}
 			})
 		);
 
@@ -59,10 +61,21 @@ export class CommentPanelView extends ItemView {
 			return;
 		}
 
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		// Try to find the most recently active markdown view
+		let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+		// If the panel itself is active, look for other markdown views
+		if (!activeView) {
+			const leaves = this.app.workspace.getLeavesOfType('markdown');
+			if (leaves.length > 0) {
+				// Get the most recently active markdown leaf
+				activeView = leaves[0].view as MarkdownView;
+			}
+		}
+
 		if (!activeView || !activeView.file) {
-			console.log('Panel: No active view or file');
-			// Only clear if we don't have a current file already
+			console.log('Panel: No markdown view found');
+			// Keep showing current file if we have one
 			if (!this.currentFile) {
 				this.comments = {};
 				this.render();
