@@ -54,11 +54,8 @@ export class CommentPanelView extends ItemView {
 	}
 
 	async loadCurrentFile(): Promise<void> {
-		console.log('Panel: loadCurrentFile called');
-
 		// Don't reload if user is actively typing a comment
 		if (this.activeInputForm) {
-			console.log('Panel: Active input form detected, skipping reload');
 			return;
 		}
 
@@ -75,7 +72,6 @@ export class CommentPanelView extends ItemView {
 		}
 
 		if (!activeView || !activeView.file) {
-			console.log('Panel: No markdown view found');
 			// Keep showing current file if we have one
 			if (!this.currentFile) {
 				this.comments = {};
@@ -86,42 +82,31 @@ export class CommentPanelView extends ItemView {
 
 		// Check if file matches pattern
 		const filePath = activeView.file.path;
-		console.log('Panel: File path:', filePath);
 		const dailyPattern = new RegExp(this.plugin.settings.dailyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
 		const weeklyPattern = new RegExp(this.plugin.settings.weeklyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
-		console.log('Panel: Patterns:', { daily: dailyPattern.source, weekly: weeklyPattern.source });
-		console.log('Panel: Daily test:', dailyPattern.test(filePath));
-		console.log('Panel: Weekly test:', weeklyPattern.test(filePath));
 
 		if (!dailyPattern.test(filePath) && !weeklyPattern.test(filePath)) {
-			console.log('Panel: File does not match patterns');
 			this.currentFile = null;
 			this.comments = {};
 			this.render();
 			return;
 		}
-		console.log('Panel: File matches pattern');
 
 		this.currentFile = activeView.file;
 		const content = await this.app.vault.read(this.currentFile);
 		this.comments = this.plugin.commentManager.parseComments(content);
 		this.persons = this.plugin.commentManager.parsePersonHeaders(content);
-		console.log('Panel: Persons found:', this.persons);
 		this.render();
 	}
 
 	render(): void {
-		console.log('Render: called, activeInputForm =', this.activeInputForm);
 		// Don't render if there's an active input form (would wipe it out)
 		if (this.activeInputForm) {
-			console.log('Render: Skipping render because activeInputForm exists');
 			return;
 		}
 
-		console.log('Render: Continuing with render');
 		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
-		console.log('Render: Container emptied');
 
 		if (!this.currentFile) {
 			container.createDiv({ text: 'No daily/weekly log open', cls: 'daily-log-comments-header' });
@@ -133,7 +118,6 @@ export class CommentPanelView extends ItemView {
 		// Create container for new comment input (initially hidden)
 		this.newCommentContainer = container.createDiv({ cls: 'daily-log-comments-new-comment-container' });
 		this.newCommentContainer.style.display = 'none';
-		console.log('Render: Created new comment container');
 
 		// Render all persons found in the file
 		for (const person of this.persons) {
@@ -335,17 +319,12 @@ export class CommentPanelView extends ItemView {
 	}
 
 	showNewCommentForm(person: string, onSubmit: (text: string) => Promise<void>): void {
-		console.log('showNewCommentForm called');
-
 		// Set flag immediately to prevent render() from wiping us out
 		this.activeInputForm = document.createElement('div') as any; // Temporary placeholder
-		console.log('Set activeInputForm placeholder to prevent render');
 
 		// Get the container from the DOM instead of relying on stored reference
 		const container = this.containerEl.querySelector('.daily-log-comments-new-comment-container') as HTMLElement;
-		console.log('Found container in DOM:', container);
 		if (!container) {
-			console.log('Container not found in DOM, returning');
 			this.activeInputForm = null; // Clear placeholder
 			return;
 		}
@@ -353,19 +332,8 @@ export class CommentPanelView extends ItemView {
 		// Update our reference
 		this.newCommentContainer = container;
 
-		console.log('Creating form elements');
 		this.newCommentContainer.empty();
-		console.log('Setting display to block');
-
-		// Try multiple approaches to ensure it's visible
-		this.newCommentContainer.style.display = 'block';
-		this.newCommentContainer.style.visibility = 'visible';
-		this.newCommentContainer.removeAttribute('hidden');
 		this.newCommentContainer.setAttribute('style', 'display: block !important;');
-
-		console.log('Style attribute:', this.newCommentContainer.getAttribute('style'));
-		console.log('Computed style:', window.getComputedStyle(this.newCommentContainer).display);
-		console.log('Container element:', this.newCommentContainer);
 
 		const label = this.newCommentContainer.createDiv({
 			text: `New comment on ${person.replace(/\[\[|\]\]/g, '')}'s section`,
@@ -373,29 +341,12 @@ export class CommentPanelView extends ItemView {
 		});
 		label.style.padding = '8px';
 		label.style.fontWeight = '500';
-		console.log('Label created');
 
 		const form = this.newCommentContainer.createDiv({ cls: 'daily-log-comments-input-form' });
 		this.activeInputForm = form;
-		console.log('Form created');
 
 		const textarea = form.createEl('textarea', { placeholder: 'Write a comment...' });
 		textarea.focus();
-		console.log('Textarea created and focused');
-		console.log('Form is now in container, children count:', this.newCommentContainer.children.length);
-		console.log('Container is in DOM:', this.containerEl.contains(this.newCommentContainer));
-		console.log('Container display style:', this.newCommentContainer.style.display);
-
-		// Check again after a short delay to see if something wipes it
-		setTimeout(() => {
-			const domContainer = this.containerEl.querySelector('.daily-log-comments-new-comment-container') as HTMLElement;
-			console.log('CHECK AFTER 50ms: DOM container found:', !!domContainer);
-			console.log('CHECK AFTER 50ms: DOM children count:', domContainer?.children.length);
-			console.log('CHECK AFTER 50ms: DOM display:', domContainer?.style.display);
-			console.log('CHECK AFTER 50ms: DOM innerHTML length:', domContainer?.innerHTML.length);
-			console.log('CHECK AFTER 50ms: Stored ref === DOM element:', this.newCommentContainer === domContainer);
-			console.log('CHECK AFTER 50ms: activeInputForm exists:', !!this.activeInputForm);
-		}, 50);
 
 		const actionsDiv = form.createDiv({ cls: 'daily-log-comments-input-form-actions' });
 

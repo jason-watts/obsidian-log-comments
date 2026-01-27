@@ -20,12 +20,10 @@ export default class DailyLogCommentsPlugin extends Plugin {
 		);
 
 		// Register commands
-		console.log('Registering add-comment command');
 		this.addCommand({
 			id: 'add-comment',
 			name: 'Add comment',
 			editorCallback: (editor, ctx) => {
-				console.log('Add comment command triggered');
 				this.handleAddComment(editor, ctx);
 			}
 		});
