@@ -164,10 +164,13 @@ export class CommentPanelView extends ItemView {
 			}
 		}
 
-		// Add reply button at the end
+		// Add reply link at the end
 		const actions = thread.createDiv({ cls: 'daily-log-comments-comment-actions' });
-		const replyBtn = actions.createEl('button', { text: 'Reply' });
-		replyBtn.addEventListener('click', () => this.showReplyForm(thread, person, comment.id));
+		const replyLink = actions.createEl('a', { text: 'Reply' });
+		replyLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			this.showReplyForm(thread, person, comment.id);
+		});
 	}
 
 	renderComment(
@@ -188,12 +191,18 @@ export class CommentPanelView extends ItemView {
 
 		const actions = commentDiv.createDiv({ cls: 'daily-log-comments-comment-actions' });
 
-		const editBtn = actions.createEl('button', { text: 'Edit' });
+		const editLink = actions.createEl('a', { text: 'Edit' });
 		const actualCommentId = isReply ? commentId! : (comment as Comment).id;
-		editBtn.addEventListener('click', () => this.showEditForm(commentDiv, person, actualCommentId, comment.text, isReply, replyIndex));
+		editLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			this.showEditForm(commentDiv, person, actualCommentId, comment.text, isReply, replyIndex);
+		});
 
-		const deleteBtn = actions.createEl('button', { text: 'Delete' });
-		deleteBtn.addEventListener('click', () => this.deleteComment(person, actualCommentId, isReply, replyIndex));
+		const deleteLink = actions.createEl('a', { text: 'Delete' });
+		deleteLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			this.deleteComment(person, actualCommentId, isReply, replyIndex);
+		});
 	}
 
 	showReplyForm(thread: HTMLElement, person: string, commentId: string): void {

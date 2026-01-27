@@ -97,12 +97,26 @@
 
 .daily-log-comments-comment-actions {
   display: flex;
-  gap: var(--size-4-1);
+  gap: var(--size-4-2);
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
-.daily-log-comments-comment-actions button {
+.daily-log-comments-comment:hover .daily-log-comments-comment-actions,
+.daily-log-comments-thread:hover > .daily-log-comments-comment-actions {
+  opacity: 1;
+}
+
+.daily-log-comments-comment-actions a {
   font-size: 0.85em;
-  padding: var(--size-2-1) var(--size-4-1);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.daily-log-comments-comment-actions a:hover {
+  color: var(--text-normal);
+  text-decoration: underline;
 }
 
 .daily-log-comments-reply {
