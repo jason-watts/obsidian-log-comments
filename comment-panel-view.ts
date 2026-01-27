@@ -52,12 +52,21 @@ export class CommentPanelView extends ItemView {
 
 	async loadCurrentFile(): Promise<void> {
 		console.log('Panel: loadCurrentFile called');
+
+		// Don't reload if user is actively typing a comment
+		if (this.activeInputForm) {
+			console.log('Panel: Active input form detected, skipping reload');
+			return;
+		}
+
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!activeView || !activeView.file) {
 			console.log('Panel: No active view or file');
-			this.currentFile = null;
-			this.comments = {};
-			this.render();
+			// Only clear if we don't have a current file already
+			if (!this.currentFile) {
+				this.comments = {};
+				this.render();
+			}
 			return;
 		}
 
