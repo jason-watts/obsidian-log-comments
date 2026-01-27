@@ -336,11 +336,17 @@ export class CommentPanelView extends ItemView {
 
 	showNewCommentForm(person: string, onSubmit: (text: string) => Promise<void>): void {
 		console.log('showNewCommentForm called');
-		console.log('newCommentContainer:', this.newCommentContainer);
-		if (!this.newCommentContainer) {
-			console.log('newCommentContainer is null, returning');
+
+		// Get the container from the DOM instead of relying on stored reference
+		const container = this.containerEl.querySelector('.daily-log-comments-new-comment-container') as HTMLElement;
+		console.log('Found container in DOM:', container);
+		if (!container) {
+			console.log('Container not found in DOM, returning');
 			return;
 		}
+
+		// Update our reference
+		this.newCommentContainer = container;
 
 		// Remove any existing input forms
 		if (this.activeInputForm) {
