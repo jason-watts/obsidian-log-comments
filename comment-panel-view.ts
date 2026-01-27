@@ -111,14 +111,17 @@ export class CommentPanelView extends ItemView {
 	}
 
 	render(): void {
+		console.log('Render: called, activeInputForm =', this.activeInputForm);
 		// Don't render if there's an active input form (would wipe it out)
 		if (this.activeInputForm) {
 			console.log('Render: Skipping render because activeInputForm exists');
 			return;
 		}
 
+		console.log('Render: Continuing with render');
 		const container = this.containerEl.children[1] as HTMLElement;
 		container.empty();
+		console.log('Render: Container emptied');
 
 		if (!this.currentFile) {
 			container.createDiv({ text: 'No daily/weekly log open', cls: 'daily-log-comments-header' });
@@ -130,6 +133,7 @@ export class CommentPanelView extends ItemView {
 		// Create container for new comment input (initially hidden)
 		this.newCommentContainer = container.createDiv({ cls: 'daily-log-comments-new-comment-container' });
 		this.newCommentContainer.style.display = 'none';
+		console.log('Render: Created new comment container');
 
 		// Render all persons found in the file
 		for (const person of this.persons) {
