@@ -107,8 +107,10 @@ export default class DailyLogCommentsPlugin extends Plugin {
 
 			// Wait for panel to load file and render
 			setTimeout(() => {
-				console.log('Showing new comment form');
+				console.log('setTimeout callback executing');
+				console.log('Panel activeInputForm before calling showNewCommentForm:', panel.activeInputForm);
 				panel.showNewCommentForm(person, async (text: string) => {
+					console.log('Inside onSubmit callback');
 					// Generate comment ID
 					const commentId = this.commentManager.generateCommentId();
 

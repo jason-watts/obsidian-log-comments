@@ -382,6 +382,9 @@ export class CommentPanelView extends ItemView {
 		const textarea = form.createEl('textarea', { placeholder: 'Write a comment...' });
 		textarea.focus();
 		console.log('Textarea created and focused');
+		console.log('Form is now in container, children count:', this.newCommentContainer.children.length);
+		console.log('Container is in DOM:', this.containerEl.contains(this.newCommentContainer));
+		console.log('Container display style:', this.newCommentContainer.style.display);
 
 		const actionsDiv = form.createDiv({ cls: 'daily-log-comments-input-form-actions' });
 
