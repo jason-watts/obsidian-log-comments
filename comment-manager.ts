@@ -1,4 +1,4 @@
-import { Editor, EditorPosition, TFile } from 'obsidian';
+import { Editor, TFile } from 'obsidian';
 import * as yaml from 'js-yaml';
 import { nanoid } from 'nanoid';
 import { CommentData, Comment, Reply } from './types';
@@ -24,6 +24,14 @@ export class CommentManager {
 		try {
 			const yamlContent = commentMatch[1];
 			const parsed = yaml.load(yamlContent) as CommentData;
+			// Ensure each person has an array
+			if (parsed) {
+				for (const person in parsed) {
+					if (!Array.isArray(parsed[person])) {
+						parsed[person] = [];
+					}
+				}
+			}
 			return parsed || {};
 		} catch (error) {
 			console.error('Failed to parse comments:', error);
@@ -56,12 +64,29 @@ export class CommentManager {
 	}
 
 	/**
-	 * Inject block ID at editor position
+	 * Parse person headers from file content
 	 */
-	injectBlockId(editor: Editor, blockId: string, position: EditorPosition): void {
-		const line = editor.getLine(position.line);
-		const newLine = `${line} ^${blockId}`;
-		editor.setLine(position.line, newLine);
+	parsePersonHeaders(content: string): string[] {
+		const persons: string[] = [];
+		const lines = content.split('\n');
+
+		for (const line of lines) {
+			// Match patterns like: # [[Person Name]] or ## [[Person Name]]
+			const headerMatch = line.match(/^#+\s*\[\[([^\]]+)\]\]/);
+			if (headerMatch) {
+				const person = `[[${headerMatch[1]}]]`;
+				if (!persons.includes(person)) {
+					persons.push(person);
+				}
+			}
+		}
+
+		// Add General if not present
+		if (!persons.includes('General')) {
+			persons.unshift('General');
+		}
+
+		return persons;
 	}
 
 	/**
@@ -93,30 +118,30 @@ export class CommentManager {
 	 */
 	async addComment(
 		file: TFile,
-		editor: Editor,
-		blockId: string,
+		commentId: string,
 		author: string,
 		text: string,
-		person: string,
-		position: EditorPosition
+		person: string
 	): Promise<void> {
 		const content = await this.plugin.app.vault.read(file);
 		const comments = this.parseComments(content);
 
+		// Initialize person array if it doesn't exist
+		if (!comments[person]) {
+			comments[person] = [];
+		}
+
 		// Add new comment
-		comments[blockId] = {
+		comments[person].push({
+			id: commentId,
 			author,
 			text,
 			timestamp: new Date().toISOString(),
-			person,
 			replies: []
-		};
+		});
 
 		// Remove old comments section if exists
 		const contentWithoutComments = content.replace(/\n*<!-- COMMENTS\n---comments\n[\s\S]*?\n---\n-->/g, '');
-
-		// Inject block ID
-		this.injectBlockId(editor, blockId, position);
 
 		// Append new comments section
 		const newContent = contentWithoutComments + this.serializeComments(comments);
@@ -129,6 +154,7 @@ export class CommentManager {
 	 */
 	async addReply(
 		file: TFile,
+		person: string,
 		commentId: string,
 		author: string,
 		text: string
@@ -136,11 +162,16 @@ export class CommentManager {
 		const content = await this.plugin.app.vault.read(file);
 		const comments = this.parseComments(content);
 
-		if (!comments[commentId]) {
+		if (!comments[person]) {
+			throw new Error('Person not found');
+		}
+
+		const comment = comments[person].find(c => c.id === commentId);
+		if (!comment) {
 			throw new Error('Comment not found');
 		}
 
-		comments[commentId].replies.push({
+		comment.replies.push({
 			author,
 			text,
 			timestamp: new Date().toISOString()
@@ -157,6 +188,7 @@ export class CommentManager {
 	 */
 	async updateComment(
 		file: TFile,
+		person: string,
 		commentId: string,
 		newText: string,
 		isReply: boolean = false,
@@ -165,17 +197,22 @@ export class CommentManager {
 		const content = await this.plugin.app.vault.read(file);
 		const comments = this.parseComments(content);
 
-		if (!comments[commentId]) {
+		if (!comments[person]) {
+			throw new Error('Person not found');
+		}
+
+		const comment = comments[person].find(c => c.id === commentId);
+		if (!comment) {
 			throw new Error('Comment not found');
 		}
 
 		if (isReply && replyIndex !== undefined) {
-			if (!comments[commentId].replies[replyIndex]) {
+			if (!comment.replies[replyIndex]) {
 				throw new Error('Reply not found');
 			}
-			comments[commentId].replies[replyIndex].text = newText;
+			comment.replies[replyIndex].text = newText;
 		} else {
-			comments[commentId].text = newText;
+			comment.text = newText;
 		}
 
 		const contentWithoutComments = content.replace(/\n*<!-- COMMENTS\n---comments\n[\s\S]*?\n---\n-->/g, '');
@@ -189,6 +226,7 @@ export class CommentManager {
 	 */
 	async deleteComment(
 		file: TFile,
+		person: string,
 		commentId: string,
 		isReply: boolean = false,
 		replyIndex?: number
@@ -196,29 +234,27 @@ export class CommentManager {
 		const content = await this.plugin.app.vault.read(file);
 		const comments = this.parseComments(content);
 
-		if (!comments[commentId]) {
+		if (!comments[person]) {
+			throw new Error('Person not found');
+		}
+
+		const commentIndex = comments[person].findIndex(c => c.id === commentId);
+		if (commentIndex === -1) {
 			throw new Error('Comment not found');
 		}
 
 		if (isReply && replyIndex !== undefined) {
-			if (!comments[commentId].replies[replyIndex]) {
+			if (!comments[person][commentIndex].replies[replyIndex]) {
 				throw new Error('Reply not found');
 			}
-			comments[commentId].replies.splice(replyIndex, 1);
+			comments[person][commentIndex].replies.splice(replyIndex, 1);
 		} else {
-			delete comments[commentId];
+			comments[person].splice(commentIndex, 1);
 		}
 
 		const contentWithoutComments = content.replace(/\n*<!-- COMMENTS\n---comments\n[\s\S]*?\n---\n-->/g, '');
 		const newContent = contentWithoutComments + this.serializeComments(comments);
 
 		await this.plugin.app.vault.modify(file, newContent);
-	}
-
-	/**
-	 * Check if block ID exists in content
-	 */
-	blockIdExists(content: string, blockId: string): boolean {
-		return content.includes(`^${blockId}`);
 	}
 }

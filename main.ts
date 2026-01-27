@@ -1,4 +1,4 @@
-import { Plugin, MarkdownView, Notice, EditorPosition, WorkspaceLeaf } from 'obsidian';
+import { Plugin, MarkdownView, Notice, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, PluginSettings, VIEW_TYPE_COMMENTS } from './types';
 import { SettingsTab } from './settings';
 import { CommentManager } from './comment-manager';
@@ -95,10 +95,6 @@ export default class DailyLogCommentsPlugin extends Plugin {
 		const person = this.commentManager.findPersonSection(editor, lineNumber);
 		console.log('Person section:', person);
 
-		// Generate comment ID
-		const commentId = this.commentManager.generateCommentId();
-		console.log('Comment ID:', commentId);
-
 		// Open panel and show input form
 		console.log('Activating view...');
 		await this.activateView();
@@ -112,18 +108,16 @@ export default class DailyLogCommentsPlugin extends Plugin {
 			// Wait for panel to load file and render
 			setTimeout(() => {
 				console.log('Showing new comment form');
-				panel.showNewCommentForm(person, commentId, async (text: string) => {
-					// Get the end position of the selection
-					const endPos: EditorPosition = editor.getCursor('to');
+				panel.showNewCommentForm(person, async (text: string) => {
+					// Generate comment ID
+					const commentId = this.commentManager.generateCommentId();
 
 					await this.commentManager.addComment(
 						file,
-						editor,
 						commentId,
 						this.settings.authorName,
 						text,
-						person,
-						endPos
+						person
 					);
 
 					if (this.settings.autoScrollToComment) {

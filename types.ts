@@ -5,15 +5,15 @@ export interface Reply {
 }
 
 export interface Comment {
+	id: string;
 	author: string;
 	text: string;
 	timestamp: string;
-	person: string;
 	replies: Reply[];
 }
 
 export interface CommentData {
-	[commentId: string]: Comment;
+	[person: string]: Comment[];
 }
 
 export interface PluginSettings {

@@ -1,11 +1,12 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
-import { VIEW_TYPE_COMMENTS, CommentData, Comment } from './types';
+import { VIEW_TYPE_COMMENTS, CommentData, Comment, Reply } from './types';
 import DailyLogCommentsPlugin from './main';
 
 export class CommentPanelView extends ItemView {
 	plugin: DailyLogCommentsPlugin;
 	currentFile: TFile | null = null;
 	comments: CommentData = {};
+	persons: string[] = [];
 	private activeInputForm: HTMLElement | null = null;
 	private newCommentContainer: HTMLElement | null = null;
 
@@ -104,6 +105,8 @@ export class CommentPanelView extends ItemView {
 		this.currentFile = activeView.file;
 		const content = await this.app.vault.read(this.currentFile);
 		this.comments = this.plugin.commentManager.parseComments(content);
+		this.persons = this.plugin.commentManager.parsePersonHeaders(content);
+		console.log('Panel: Persons found:', this.persons);
 		this.render();
 	}
 
@@ -122,30 +125,14 @@ export class CommentPanelView extends ItemView {
 		this.newCommentContainer = container.createDiv({ cls: 'daily-log-comments-new-comment-container' });
 		this.newCommentContainer.style.display = 'none';
 
-		// Group comments by person
-		const groupedComments: { [person: string]: [string, Comment][] } = {};
-
-		for (const [commentId, comment] of Object.entries(this.comments)) {
-			const person = comment.person;
-			if (!groupedComments[person]) {
-				groupedComments[person] = [];
-			}
-			groupedComments[person].push([commentId, comment]);
-		}
-
-		// Sort people: General first, then alphabetically
-		const sortedPeople = Object.keys(groupedComments).sort((a, b) => {
-			if (a === 'General') return -1;
-			if (b === 'General') return 1;
-			return a.localeCompare(b);
-		});
-
-		for (const person of sortedPeople) {
-			this.renderPersonSection(container, person, groupedComments[person]);
+		// Render all persons found in the file
+		for (const person of this.persons) {
+			const personComments = this.comments[person] || [];
+			this.renderPersonSection(container, person, personComments);
 		}
 	}
 
-	renderPersonSection(container: HTMLElement, person: string, comments: [string, Comment][]): void {
+	renderPersonSection(container: HTMLElement, person: string, comments: Comment[]): void {
 		const section = container.createDiv({ cls: 'daily-log-comments-section' });
 
 		const header = section.createDiv({ cls: 'daily-log-comments-section-header' });
@@ -163,38 +150,39 @@ export class CommentPanelView extends ItemView {
 			content.style.display = isCollapsed ? 'none' : 'block';
 		});
 
-		for (const [commentId, comment] of comments) {
-			this.renderThread(content, commentId, comment);
+		for (const comment of comments) {
+			this.renderThread(content, person, comment);
 		}
 	}
 
-	renderThread(container: HTMLElement, commentId: string, comment: Comment): void {
+	renderThread(container: HTMLElement, person: string, comment: Comment): void {
 		const thread = container.createDiv({ cls: 'daily-log-comments-thread' });
-		thread.setAttribute('data-comment-id', commentId);
+		thread.setAttribute('data-comment-id', comment.id);
 
 		// Render main comment
-		this.renderComment(thread, commentId, comment, false);
+		this.renderComment(thread, person, comment, false);
 
 		// Render replies
 		if (comment.replies && comment.replies.length > 0) {
 			for (let i = 0; i < comment.replies.length; i++) {
 				const replyDiv = thread.createDiv({ cls: 'daily-log-comments-reply' });
-				this.renderComment(replyDiv, commentId, comment.replies[i], true, i);
+				this.renderComment(replyDiv, person, comment.replies[i], true, i, comment.id);
 			}
 		}
 
 		// Add reply button at the end
 		const actions = thread.createDiv({ cls: 'daily-log-comments-comment-actions' });
 		const replyBtn = actions.createEl('button', { text: 'Reply' });
-		replyBtn.addEventListener('click', () => this.showReplyForm(thread, commentId));
+		replyBtn.addEventListener('click', () => this.showReplyForm(thread, person, comment.id));
 	}
 
 	renderComment(
 		container: HTMLElement,
-		commentId: string,
-		comment: Comment | any,
+		person: string,
+		comment: Comment | Reply | any,
 		isReply: boolean,
-		replyIndex?: number
+		replyIndex?: number,
+		commentId?: string
 	): void {
 		const commentDiv = container.createDiv({ cls: 'daily-log-comments-comment' });
 
@@ -202,27 +190,19 @@ export class CommentPanelView extends ItemView {
 		header.createSpan({ text: comment.author.replace(/\[\[|\]\]/g, ''), cls: 'daily-log-comments-comment-author' });
 		header.createSpan({ text: this.formatTimestamp(comment.timestamp), cls: 'daily-log-comments-comment-timestamp' });
 
-		// Check if block ID exists
-		if (!isReply && this.currentFile) {
-			this.app.vault.read(this.currentFile).then(content => {
-				if (!this.plugin.commentManager.blockIdExists(content, commentId)) {
-					header.createSpan({ text: '(anchor missing)', cls: 'daily-log-comments-comment-warning' });
-				}
-			});
-		}
-
 		commentDiv.createDiv({ text: comment.text, cls: 'daily-log-comments-comment-text' });
 
 		const actions = commentDiv.createDiv({ cls: 'daily-log-comments-comment-actions' });
 
 		const editBtn = actions.createEl('button', { text: 'Edit' });
-		editBtn.addEventListener('click', () => this.showEditForm(commentDiv, commentId, comment.text, isReply, replyIndex));
+		const actualCommentId = isReply ? commentId! : (comment as Comment).id;
+		editBtn.addEventListener('click', () => this.showEditForm(commentDiv, person, actualCommentId, comment.text, isReply, replyIndex));
 
 		const deleteBtn = actions.createEl('button', { text: 'Delete' });
-		deleteBtn.addEventListener('click', () => this.deleteComment(commentId, isReply, replyIndex));
+		deleteBtn.addEventListener('click', () => this.deleteComment(person, actualCommentId, isReply, replyIndex));
 	}
 
-	showReplyForm(thread: HTMLElement, commentId: string): void {
+	showReplyForm(thread: HTMLElement, person: string, commentId: string): void {
 		// Remove any existing input forms
 		if (this.activeInputForm) {
 			this.activeInputForm.remove();
@@ -250,6 +230,7 @@ export class CommentPanelView extends ItemView {
 			try {
 				await this.plugin.commentManager.addReply(
 					this.currentFile,
+					person,
 					commentId,
 					this.plugin.settings.authorName,
 					text
@@ -262,7 +243,7 @@ export class CommentPanelView extends ItemView {
 		});
 	}
 
-	showEditForm(commentDiv: HTMLElement, commentId: string, currentText: string, isReply: boolean, replyIndex?: number): void {
+	showEditForm(commentDiv: HTMLElement, person: string, commentId: string, currentText: string, isReply: boolean, replyIndex?: number): void {
 		const textDiv = commentDiv.querySelector('.daily-log-comments-comment-text') as HTMLElement;
 		if (!textDiv) return;
 
@@ -287,6 +268,7 @@ export class CommentPanelView extends ItemView {
 			try {
 				await this.plugin.commentManager.updateComment(
 					this.currentFile,
+					person,
 					commentId,
 					newText,
 					isReply,
@@ -298,7 +280,7 @@ export class CommentPanelView extends ItemView {
 		});
 	}
 
-	async deleteComment(commentId: string, isReply: boolean, replyIndex?: number): Promise<void> {
+	async deleteComment(person: string, commentId: string, isReply: boolean, replyIndex?: number): Promise<void> {
 		if (!this.currentFile) return;
 
 		const message = isReply ? 'Delete this reply?' : 'Delete this comment and all replies?';
@@ -307,6 +289,7 @@ export class CommentPanelView extends ItemView {
 		try {
 			await this.plugin.commentManager.deleteComment(
 				this.currentFile,
+				person,
 				commentId,
 				isReply,
 				replyIndex
@@ -341,7 +324,7 @@ export class CommentPanelView extends ItemView {
 		}
 	}
 
-	showNewCommentForm(person: string, commentId: string, onSubmit: (text: string) => Promise<void>): void {
+	showNewCommentForm(person: string, onSubmit: (text: string) => Promise<void>): void {
 		console.log('showNewCommentForm called');
 		console.log('newCommentContainer:', this.newCommentContainer);
 		if (!this.newCommentContainer) {
