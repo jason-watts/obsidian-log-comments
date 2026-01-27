@@ -93,7 +93,7 @@ export default class DailyLogCommentsPlugin extends Plugin {
 				const personName = person.replace(/\[\[|\]\]/g, '');
 				let personSection: HTMLElement | null = null;
 
-				const sections = panel.containerEl.querySelectorAll('.daily-log-comments-section-name');
+				const sections = Array.from(panel.containerEl.querySelectorAll('.daily-log-comments-section-name'));
 				for (const section of sections) {
 					if (section.textContent === personName) {
 						personSection = section.parentElement?.parentElement as HTMLElement;
