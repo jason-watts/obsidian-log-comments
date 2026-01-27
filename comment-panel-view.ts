@@ -7,6 +7,7 @@ export class CommentPanelView extends ItemView {
 	currentFile: TFile | null = null;
 	comments: CommentData = {};
 	private activeInputForm: HTMLElement | null = null;
+	private newCommentContainer: HTMLElement | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: DailyLogCommentsPlugin) {
 		super(leaf);
@@ -86,6 +87,10 @@ export class CommentPanelView extends ItemView {
 		}
 
 		container.createDiv({ text: 'Daily Log Comments', cls: 'daily-log-comments-header' });
+
+		// Create container for new comment input (initially hidden)
+		this.newCommentContainer = container.createDiv({ cls: 'daily-log-comments-new-comment-container' });
+		this.newCommentContainer.style.display = 'none';
 
 		// Group comments by person
 		const groupedComments: { [person: string]: [string, Comment][] } = {};
@@ -304,6 +309,59 @@ export class CommentPanelView extends ItemView {
 			thread.addClass('highlighted');
 			setTimeout(() => thread.removeClass('highlighted'), 2000);
 		}
+	}
+
+	showNewCommentForm(person: string, commentId: string, onSubmit: (text: string) => Promise<void>): void {
+		if (!this.newCommentContainer) return;
+
+		// Remove any existing input forms
+		if (this.activeInputForm) {
+			this.activeInputForm.remove();
+			this.activeInputForm = null;
+		}
+
+		this.newCommentContainer.empty();
+		this.newCommentContainer.style.display = 'block';
+
+		const label = this.newCommentContainer.createDiv({
+			text: `New comment on ${person.replace(/\[\[|\]\]/g, '')}'s section`,
+			cls: 'daily-log-comments-new-comment-label'
+		});
+		label.style.padding = '8px';
+		label.style.fontWeight = '500';
+
+		const form = this.newCommentContainer.createDiv({ cls: 'daily-log-comments-input-form' });
+		this.activeInputForm = form;
+
+		const textarea = form.createEl('textarea', { placeholder: 'Write a comment...' });
+		textarea.focus();
+
+		const actionsDiv = form.createDiv({ cls: 'daily-log-comments-input-form-actions' });
+
+		const cancelBtn = actionsDiv.createEl('button', { text: 'Cancel' });
+		cancelBtn.addEventListener('click', () => {
+			this.newCommentContainer!.style.display = 'none';
+			this.newCommentContainer!.empty();
+			this.activeInputForm = null;
+		});
+
+		const submitBtn = actionsDiv.createEl('button', { text: 'Submit' });
+		submitBtn.addEventListener('click', async () => {
+			const text = textarea.value.trim();
+			if (!text) return;
+
+			try {
+				await onSubmit(text);
+				this.newCommentContainer!.style.display = 'none';
+				this.newCommentContainer!.empty();
+				this.activeInputForm = null;
+			} catch (error) {
+				console.error('Failed to add comment:', error);
+			}
+		});
+
+		// Scroll to the form
+		this.newCommentContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 
 	async onClose(): Promise<void> {

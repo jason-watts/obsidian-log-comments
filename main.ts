@@ -109,83 +109,29 @@ export default class DailyLogCommentsPlugin extends Plugin {
 			const panel = leaf.view as CommentPanelView;
 			console.log('Panel view found');
 
-			// Wait for panel to load
+			// Wait for panel to load file and render
 			setTimeout(() => {
-				console.log('setTimeout callback executing');
-				// Find the person section
-				const personName = person.replace(/\[\[|\]\]/g, '');
-				console.log('Looking for person section:', personName);
-				let personSection: HTMLElement | null = null;
+				console.log('Showing new comment form');
+				panel.showNewCommentForm(person, commentId, async (text: string) => {
+					// Get the end position of the selection
+					const endPos: EditorPosition = editor.getCursor('to');
 
-				const sections = Array.from(panel.containerEl.querySelectorAll('.daily-log-comments-section-name'));
-				console.log('Found sections:', sections.length);
-				for (const section of sections) {
-					console.log('Section text:', section.textContent);
-					if (section.textContent === personName) {
-						personSection = section.parentElement?.parentElement as HTMLElement;
-						console.log('Found matching section');
-						break;
-					}
-				}
+					await this.commentManager.addComment(
+						file,
+						editor,
+						commentId,
+						this.settings.authorName,
+						text,
+						person,
+						endPos
+					);
 
-				if (personSection) {
-					console.log('Person section found, creating form');
-					const content = personSection.querySelector('.daily-log-comments-section-content') as HTMLElement;
-
-					// Remove any existing input forms
-					const existingForms = panel.containerEl.querySelectorAll('.daily-log-comments-input-form');
-					existingForms.forEach(form => form.remove());
-
-					// Create input form
-					const form = content.createDiv({ cls: 'daily-log-comments-input-form' });
-
-					const textarea = form.createEl('textarea', { placeholder: 'Write a comment...' });
-					textarea.focus();
-
-					const actionsDiv = form.createDiv({ cls: 'daily-log-comments-input-form-actions' });
-
-					const cancelBtn = actionsDiv.createEl('button', { text: 'Cancel' });
-					cancelBtn.addEventListener('click', () => {
-						form.remove();
-					});
-
-					const submitBtn = actionsDiv.createEl('button', { text: 'Submit' });
-					submitBtn.addEventListener('click', async () => {
-						const text = textarea.value.trim();
-						if (!text) return;
-
-						try {
-							// Get the end position of the selection
-							const endPos: EditorPosition = editor.getCursor('to');
-
-							await this.commentManager.addComment(
-								file,
-								editor,
-								commentId,
-								this.settings.authorName,
-								text,
-								person,
-								endPos
-							);
-
-							form.remove();
-
-							if (this.settings.autoScrollToComment) {
-								setTimeout(() => panel.scrollToComment(commentId), 100);
-							}
-
-							new Notice('Comment added');
-						} catch (error) {
-							console.error('Failed to add comment:', error);
-							new Notice('Failed to add comment');
-						}
-					});
-
-					// Scroll to section
 					if (this.settings.autoScrollToComment) {
-						personSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						setTimeout(() => panel.scrollToComment(commentId), 100);
 					}
-				}
+
+					new Notice('Comment added');
+				});
 			}, 100);
 		}
 	}
