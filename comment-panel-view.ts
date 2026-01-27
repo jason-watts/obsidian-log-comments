@@ -60,8 +60,8 @@ export class CommentPanelView extends ItemView {
 
 		// Check if file matches pattern
 		const filePath = activeView.file.path;
-		const dailyPattern = new RegExp(this.plugin.settings.dailyLogPattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*'));
-		const weeklyPattern = new RegExp(this.plugin.settings.weeklyLogPattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*'));
+		const dailyPattern = new RegExp(this.plugin.settings.dailyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
+		const weeklyPattern = new RegExp(this.plugin.settings.weeklyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
 
 		if (!dailyPattern.test(filePath) && !weeklyPattern.test(filePath)) {
 			this.currentFile = null;

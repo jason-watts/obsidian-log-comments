@@ -62,8 +62,9 @@ export default class DailyLogCommentsPlugin extends Plugin {
 		const file = view.file;
 
 		const filePath = file.path;
-		const dailyPattern = new RegExp(this.settings.dailyLogPattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*'));
-		const weeklyPattern = new RegExp(this.settings.weeklyLogPattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*'));
+		// Convert glob pattern to regex: ** -> .* (any chars including /), * -> [^/]* (any chars except /)
+		const dailyPattern = new RegExp(this.settings.dailyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
+		const weeklyPattern = new RegExp(this.settings.weeklyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
 
 		if (!dailyPattern.test(filePath) && !weeklyPattern.test(filePath)) {
 			new Notice('This command only works in daily/weekly log files');
