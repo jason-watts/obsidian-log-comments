@@ -312,14 +312,21 @@ export class CommentPanelView extends ItemView {
 	}
 
 	showNewCommentForm(person: string, commentId: string, onSubmit: (text: string) => Promise<void>): void {
-		if (!this.newCommentContainer) return;
+		console.log('showNewCommentForm called');
+		console.log('newCommentContainer:', this.newCommentContainer);
+		if (!this.newCommentContainer) {
+			console.log('newCommentContainer is null, returning');
+			return;
+		}
 
 		// Remove any existing input forms
 		if (this.activeInputForm) {
+			console.log('Removing existing form');
 			this.activeInputForm.remove();
 			this.activeInputForm = null;
 		}
 
+		console.log('Creating form elements');
 		this.newCommentContainer.empty();
 		this.newCommentContainer.style.display = 'block';
 
@@ -329,12 +336,15 @@ export class CommentPanelView extends ItemView {
 		});
 		label.style.padding = '8px';
 		label.style.fontWeight = '500';
+		console.log('Label created');
 
 		const form = this.newCommentContainer.createDiv({ cls: 'daily-log-comments-input-form' });
 		this.activeInputForm = form;
+		console.log('Form created');
 
 		const textarea = form.createEl('textarea', { placeholder: 'Write a comment...' });
 		textarea.focus();
+		console.log('Textarea created and focused');
 
 		const actionsDiv = form.createDiv({ cls: 'daily-log-comments-input-form-actions' });
 
