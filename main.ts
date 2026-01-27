@@ -90,9 +90,16 @@ export default class DailyLogCommentsPlugin extends Plugin {
 			// Wait for panel to load
 			setTimeout(() => {
 				// Find the person section
-				const personSection = panel.containerEl.querySelector(
-					`.daily-log-comments-section-name:contains("${person.replace(/\[\[|\]\]/g, '')}")`
-				)?.parentElement?.parentElement as HTMLElement;
+				const personName = person.replace(/\[\[|\]\]/g, '');
+				let personSection: HTMLElement | null = null;
+
+				const sections = panel.containerEl.querySelectorAll('.daily-log-comments-section-name');
+				for (const section of sections) {
+					if (section.textContent === personName) {
+						personSection = section.parentElement?.parentElement as HTMLElement;
+						break;
+					}
+				}
 
 				if (personSection) {
 					const content = personSection.querySelector('.daily-log-comments-section-content') as HTMLElement;
