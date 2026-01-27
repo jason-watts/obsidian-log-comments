@@ -56,57 +56,80 @@ export default class DailyLogCommentsPlugin extends Plugin {
 		console.log('handleAddComment called');
 		// Check if author is configured
 		if (!this.settings.authorName) {
+			console.log('Author not configured');
 			new Notice('Please configure your author name in plugin settings');
 			return;
 		}
+		console.log('Author configured:', this.settings.authorName);
 
 		// Check if file matches pattern
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (!view || !view.file) return;
+		if (!view || !view.file) {
+			console.log('No active view or file');
+			return;
+		}
+		console.log('View and file found');
 
 		const file = view.file;
 
 		const filePath = file.path;
+		console.log('File path:', filePath);
 		// Convert glob pattern to regex: ** -> .* (any chars including /), * -> [^/]* (any chars except /)
 		const dailyPattern = new RegExp(this.settings.dailyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
 		const weeklyPattern = new RegExp(this.settings.weeklyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
+		console.log('Patterns:', { daily: dailyPattern.source, weekly: weeklyPattern.source });
 
 		if (!dailyPattern.test(filePath) && !weeklyPattern.test(filePath)) {
+			console.log('File does not match patterns');
 			new Notice('This command only works in daily/weekly log files');
 			return;
 		}
+		console.log('File matches pattern');
 
 		// Get cursor position (use end of selection if text is selected, otherwise current position)
 		const cursor = editor.getCursor('to');
 		const lineNumber = cursor.line;
+		console.log('Cursor line:', lineNumber);
 
 		// Find person section
 		const person = this.commentManager.findPersonSection(editor, lineNumber);
+		console.log('Person section:', person);
 
 		// Generate comment ID
 		const commentId = this.commentManager.generateCommentId();
+		console.log('Comment ID:', commentId);
 
 		// Open panel and show input form
+		console.log('Activating view...');
 		await this.activateView();
+		console.log('View activated');
 		const leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_COMMENTS)[0];
+		console.log('Leaf:', leaf);
 		if (leaf && leaf.view instanceof CommentPanelView) {
 			const panel = leaf.view as CommentPanelView;
+			console.log('Panel view found');
 
 			// Wait for panel to load
 			setTimeout(() => {
+				console.log('setTimeout callback executing');
 				// Find the person section
 				const personName = person.replace(/\[\[|\]\]/g, '');
+				console.log('Looking for person section:', personName);
 				let personSection: HTMLElement | null = null;
 
 				const sections = Array.from(panel.containerEl.querySelectorAll('.daily-log-comments-section-name'));
+				console.log('Found sections:', sections.length);
 				for (const section of sections) {
+					console.log('Section text:', section.textContent);
 					if (section.textContent === personName) {
 						personSection = section.parentElement?.parentElement as HTMLElement;
+						console.log('Found matching section');
 						break;
 					}
 				}
 
 				if (personSection) {
+					console.log('Person section found, creating form');
 					const content = personSection.querySelector('.daily-log-comments-section-content') as HTMLElement;
 
 					// Remove any existing input forms
