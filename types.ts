@@ -19,8 +19,6 @@ export interface CommentData {
 export interface PluginSettings {
 	authorName: string;
 	peopleFolder: string;
-	dailyLogPattern: string;
-	weeklyLogPattern: string;
 	autoOpenPanel: boolean;
 	autoScrollToComment: boolean;
 	keepPanelOpen: boolean;
@@ -29,11 +27,9 @@ export interface PluginSettings {
 export const DEFAULT_SETTINGS: PluginSettings = {
 	authorName: '',
 	peopleFolder: 'Reference/People',
-	dailyLogPattern: 'Logs/Daily/**/*.md',
-	weeklyLogPattern: 'Logs/Weekly/**/*.md',
 	autoOpenPanel: true,
 	autoScrollToComment: true,
 	keepPanelOpen: false
 };
 
-export const VIEW_TYPE_COMMENTS = 'daily-log-comments-view';
+export const VIEW_TYPE_COMMENTS = 'page-comments-view';

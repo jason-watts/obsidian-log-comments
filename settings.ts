@@ -11,9 +11,8 @@ export class SettingsTab extends PluginSettingTab {
 
 	display(): void {
 		const { containerEl } = this;
-
 		containerEl.empty();
-		containerEl.createEl('h2', { text: 'Daily Log Comments Settings' });
+		containerEl.createEl('h2', { text: 'Page Comments Settings' });
 
 		new Setting(containerEl)
 			.setName('Author Name')
@@ -22,11 +21,8 @@ export class SettingsTab extends PluginSettingTab {
 				.setPlaceholder('Jason Watts')
 				.setValue(this.plugin.settings.authorName)
 				.onChange(async (value) => {
-					// Auto-format as wikilink if not already
 					let formatted = value.trim();
-					if (formatted && !formatted.startsWith('[[')) {
-						formatted = `[[${formatted}]]`;
-					}
+					if (formatted && !formatted.startsWith('[[')) formatted = `[[${formatted}]]`;
 					this.plugin.settings.authorName = formatted;
 					await this.plugin.saveSettings();
 				}));
@@ -72,40 +68,6 @@ export class SettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.keepPanelOpen = value;
 					await this.plugin.saveSettings();
-				}));
-
-		containerEl.createEl('h3', { text: 'File Patterns (Advanced)' });
-
-		new Setting(containerEl)
-			.setName('Daily logs pattern')
-			.setDesc('Glob pattern for daily log files')
-			.addText(text => text
-				.setPlaceholder('Logs/Daily/**/*.md')
-				.setValue(this.plugin.settings.dailyLogPattern)
-				.onChange(async (value) => {
-					this.plugin.settings.dailyLogPattern = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Weekly logs pattern')
-			.setDesc('Glob pattern for weekly log files')
-			.addText(text => text
-				.setPlaceholder('Logs/Weekly/**/*.md')
-				.setValue(this.plugin.settings.weeklyLogPattern)
-				.onChange(async (value) => {
-					this.plugin.settings.weeklyLogPattern = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.addButton(button => button
-				.setButtonText('Restore Defaults')
-				.onClick(async () => {
-					this.plugin.settings.dailyLogPattern = 'Logs/Daily/**/*.md';
-					this.plugin.settings.weeklyLogPattern = 'Logs/Weekly/**/*.md';
-					await this.plugin.saveSettings();
-					this.display();
 				}));
 	}
 }

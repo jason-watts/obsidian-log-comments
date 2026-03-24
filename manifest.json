@@ -1,9 +1,9 @@
 {
-  "id": "daily-log-comments",
-  "name": "Daily Log Comments",
-  "version": "2.0.0",
+  "id": "page-comments",
+  "name": "Page Comments",
+  "version": "3.0.0",
   "minAppVersion": "1.4.0",
-  "description": "Add collaborative threaded comments to daily and weekly logs",
+  "description": "Add collaborative threaded comments to any page in your vault",
   "author": "Jason Watts",
   "authorUrl": "https://github.com/jasonwatts",
   "isDesktopOnly": true

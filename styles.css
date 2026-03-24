@@ -1,17 +1,17 @@
 /* Comment Panel Styles */
-.daily-log-comments-panel {
+.page-comments-panel {
   padding: 0;
   height: 100%;
   overflow-y: auto;
 }
 
-.daily-log-comments-header {
+.page-comments-header {
   padding: var(--size-4-4);
   border-bottom: 1px solid var(--background-modifier-border);
   font-weight: 600;
 }
 
-.daily-log-comments-instructions {
+.page-comments-instructions {
   padding: var(--size-4-3);
   background: var(--background-secondary);
   border-bottom: 1px solid var(--background-modifier-border);
@@ -19,37 +19,37 @@
   color: var(--text-muted);
 }
 
-.daily-log-comments-instructions-header {
+.page-comments-instructions-header {
   font-weight: 500;
   margin-bottom: var(--size-4-1);
   color: var(--text-normal);
 }
 
-.daily-log-comments-instructions ol {
+.page-comments-instructions ol {
   margin: 0;
   padding-left: var(--size-4-5);
 }
 
-.daily-log-comments-instructions li {
+.page-comments-instructions li {
   margin-bottom: var(--size-2-1);
 }
 
-.daily-log-comments-instructions li:last-child {
+.page-comments-instructions li:last-child {
   margin-bottom: 0;
 }
 
-.daily-log-comments-empty-state {
+.page-comments-empty-state {
   padding: var(--size-4-8);
   text-align: center;
   color: var(--text-muted);
   font-style: italic;
 }
 
-.daily-log-comments-section {
+.page-comments-section {
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.daily-log-comments-section-header {
+.page-comments-section-header {
   padding: var(--size-4-2);
   cursor: pointer;
   display: flex;
@@ -58,36 +58,36 @@
   background: var(--background-secondary);
 }
 
-.daily-log-comments-section-header:hover {
+.page-comments-section-header:hover {
   background: var(--background-modifier-hover);
 }
 
-.daily-log-comments-section-toggle {
+.page-comments-section-toggle {
   font-size: 0.8em;
   user-select: none;
 }
 
-.daily-log-comments-section-name {
+.page-comments-section-name {
   font-weight: 500;
   flex-grow: 1;
 }
 
-.daily-log-comments-section-count {
+.page-comments-section-count {
   font-size: 0.9em;
   color: var(--text-muted);
 }
 
-.daily-log-comments-section-content {
+.page-comments-section-content {
   padding: var(--size-4-2);
 }
 
-.daily-log-comments-thread {
+.page-comments-thread {
   margin-bottom: var(--size-4-4);
   padding: var(--size-4-2);
   border-left: 2px solid var(--background-modifier-border);
 }
 
-.daily-log-comments-thread.highlighted {
+.page-comments-thread.highlighted {
   background: var(--background-modifier-hover);
   animation: highlight-fade 2s ease-out;
 }
@@ -97,11 +97,11 @@
   to { background: transparent; }
 }
 
-.daily-log-comments-comment {
+.page-comments-comment {
   margin-bottom: var(--size-4-2);
 }
 
-.daily-log-comments-comment-header {
+.page-comments-comment-header {
   display: flex;
   align-items: baseline;
   gap: var(--size-4-1);
@@ -109,27 +109,27 @@
   font-size: 0.9em;
 }
 
-.daily-log-comments-comment-author {
+.page-comments-comment-author {
   font-weight: 500;
   color: var(--text-accent);
 }
 
-.daily-log-comments-comment-timestamp {
+.page-comments-comment-timestamp {
   color: var(--text-muted);
   font-size: 0.9em;
 }
 
-.daily-log-comments-comment-warning {
+.page-comments-comment-warning {
   color: var(--text-error);
   font-size: 0.9em;
 }
 
-.daily-log-comments-comment-text {
+.page-comments-comment-text {
   margin-bottom: var(--size-4-2);
   white-space: pre-wrap;
 }
 
-.daily-log-comments-comment-actions {
+.page-comments-comment-actions {
   display: flex;
   gap: var(--size-4-2);
   opacity: 0;
@@ -138,12 +138,12 @@
   flex-wrap: nowrap;
 }
 
-.daily-log-comments-comment:hover .daily-log-comments-comment-actions,
-.daily-log-comments-thread:hover > .daily-log-comments-comment-actions {
+.page-comments-comment:hover .page-comments-comment-actions,
+.page-comments-thread:hover > .page-comments-comment-actions {
   opacity: 1;
 }
 
-.daily-log-comments-comment-actions a {
+.page-comments-comment-actions a {
   font-size: 0.85em;
   color: var(--link-color);
   cursor: pointer;
@@ -151,17 +151,17 @@
   flex-shrink: 0;
 }
 
-.daily-log-comments-comment-actions a:hover {
+.page-comments-comment-actions a:hover {
   color: var(--link-color-hover);
 }
 
-.daily-log-comments-reply {
+.page-comments-reply {
   margin-left: var(--size-4-4);
   padding-left: var(--size-4-2);
   border-left: 1px solid var(--background-modifier-border);
 }
 
-.daily-log-comments-input-form {
+.page-comments-input-form {
   margin: var(--size-4-2) 0;
   padding: var(--size-4-2);
   background: var(--background-primary);
@@ -169,7 +169,7 @@
   border-radius: var(--radius-s);
 }
 
-.daily-log-comments-input-form textarea {
+.page-comments-input-form textarea {
   width: 100%;
   min-height: 60px;
   margin-bottom: var(--size-4-2);
@@ -181,19 +181,19 @@
   resize: vertical;
 }
 
-.daily-log-comments-input-form-actions {
+.page-comments-input-form-actions {
   display: flex;
   gap: var(--size-4-1);
   justify-content: flex-end;
 }
 
 /* Gutter icon styles */
-.cm-gutterElement .daily-log-comment-marker {
+.cm-gutterElement .page-comment-marker {
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.2s;
 }
 
-.cm-gutterElement .daily-log-comment-marker:hover {
+.cm-gutterElement .page-comment-marker:hover {
   opacity: 1;
 }

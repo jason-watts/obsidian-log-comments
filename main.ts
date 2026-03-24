@@ -10,22 +10,14 @@ export default class DailyLogCommentsPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-
 		this.commentManager = new CommentManager(this);
 
-		// Register view
-		this.registerView(
-			VIEW_TYPE_COMMENTS,
-			(leaf) => new CommentPanelView(leaf, this)
-		);
+		this.registerView(VIEW_TYPE_COMMENTS, (leaf) => new CommentPanelView(leaf, this));
 
-		// Register commands
 		this.addCommand({
 			id: 'add-comment',
 			name: 'Add comment',
-			editorCallback: (editor, ctx) => {
-				this.handleAddComment(editor, ctx);
-			}
+			editorCallback: (editor, ctx) => this.handleAddComment(editor, ctx)
 		});
 
 		this.addCommand({
@@ -34,98 +26,39 @@ export default class DailyLogCommentsPlugin extends Plugin {
 			callback: () => this.togglePanel()
 		});
 
-		// Add ribbon icon
-		this.addRibbonIcon('message-square', 'Toggle comments panel', () => {
-			this.togglePanel();
-		});
-
-		// Register settings tab
+		this.addRibbonIcon('message-square', 'Toggle comments panel', () => this.togglePanel());
 		this.addSettingTab(new SettingsTab(this.app, this));
 
-		// Ensure panel is open if setting is enabled
 		if (this.settings.keepPanelOpen) {
-			this.app.workspace.onLayoutReady(() => {
-				this.activateView();
-			});
+			this.app.workspace.onLayoutReady(() => this.activateView());
 		}
 	}
 
 	async handleAddComment(editor: any, ctx: any) {
-		console.log('handleAddComment called');
-		// Check if author is configured
 		if (!this.settings.authorName) {
-			console.log('Author not configured');
 			new Notice('Please configure your author name in plugin settings');
 			return;
 		}
-		console.log('Author configured:', this.settings.authorName);
 
-		// Check if file matches pattern
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (!view || !view.file) {
-			console.log('No active view or file');
-			return;
-		}
-		console.log('View and file found');
+		if (!view?.file) return;
 
 		const file = view.file;
-
-		const filePath = file.path;
-		console.log('File path:', filePath);
-		// Convert glob pattern to regex: ** -> .* (any chars including /), * -> [^/]* (any chars except /)
-		const dailyPattern = new RegExp(this.settings.dailyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
-		const weeklyPattern = new RegExp(this.settings.weeklyLogPattern.replace(/\*\*/g, '__GLOBSTAR__').replace(/\*/g, '[^/]*').replace(/__GLOBSTAR__/g, '.*'));
-		console.log('Patterns:', { daily: dailyPattern.source, weekly: weeklyPattern.source });
-
-		if (!dailyPattern.test(filePath) && !weeklyPattern.test(filePath)) {
-			console.log('File does not match patterns');
-			new Notice('This command only works in daily/weekly log files');
-			return;
-		}
-		console.log('File matches pattern');
-
-		// Get cursor position (use end of selection if text is selected, otherwise current position)
 		const cursor = editor.getCursor('to');
-		const lineNumber = cursor.line;
-		console.log('Cursor line:', lineNumber);
+		const person = this.commentManager.findPersonSection(editor, cursor.line);
 
-		// Find person section
-		const person = this.commentManager.findPersonSection(editor, lineNumber);
-		console.log('Person section:', person);
-
-		// Open panel and show input form
-		console.log('Activating view...');
 		await this.activateView();
-		console.log('View activated');
 		const leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_COMMENTS)[0];
-		console.log('Leaf:', leaf);
 		if (leaf && leaf.view instanceof CommentPanelView) {
 			const panel = leaf.view as CommentPanelView;
-			console.log('Panel view found');
-
-			// Wait for panel to load file and render
 			setTimeout(() => {
-				console.log('setTimeout callback executing');
 				panel.showNewCommentForm(person, async (text: string) => {
-					console.log('Inside onSubmit callback');
-					// Generate comment ID
 					const commentId = this.commentManager.generateCommentId();
-
-					await this.commentManager.addComment(
-						file,
-						commentId,
-						this.settings.authorName,
-						text,
-						person
-					);
-
-					// Reload the panel to show the new comment
+					await this.commentManager.addComment(file, commentId, this.settings.authorName, text, person);
 					await panel.loadCurrentFile();
-
 					if (this.settings.autoScrollToComment) {
 						setTimeout(() => panel.scrollToComment(commentId), 100);
 					}
-
 					new Notice('Comment added');
 				});
 			}, 100);
@@ -143,20 +76,15 @@ export default class DailyLogCommentsPlugin extends Plugin {
 
 	async activateView() {
 		const { workspace } = this.app;
-
 		let leaf: WorkspaceLeaf | null = null;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_COMMENTS);
-
 		if (leaves.length > 0) {
 			leaf = leaves[0];
 		} else {
 			leaf = workspace.getRightLeaf(false);
 			await leaf?.setViewState({ type: VIEW_TYPE_COMMENTS, active: true });
 		}
-
-		if (leaf) {
-			workspace.revealLeaf(leaf);
-		}
+		if (leaf) workspace.revealLeaf(leaf);
 	}
 
 	async loadSettings() {
